@@ -6,5 +6,6 @@
                  [compojure "0.6.2"]
                  [hiccup "0.3.4"]
                  [ring "0.3.7"]
+                 [congomongo "0.1.6-SNAPSHOT"]
                  ]
   )
