@@ -7,6 +7,7 @@
   (:use ring.middleware.reload)
   (:use ring.middleware.stacktrace)
   (:use somnium.congomongo)
+  (:use tropyclj.middleware)
   (:use tropyclj.mongo-init)
 )
 
@@ -14,17 +15,6 @@
   {:status 200
    :headers {"Content-Type" "text/plain"}
    :body "Hello from Clojure!\n"})
-
-(defn wrap-charset [handler charset]
-  (fn [request]
-    (if-let [response (handler request)]
-      (if-let [content-type (get-in response [:headers "Content-Type"])]
-        (if (.contains content-type "charset")
-          response
-          (assoc-in response
-                    [:headers "Content-Type"]
-                    (str content-type "; charset=" charset)))
-        response))))
 
 (defroutes tropyclj
   (GET "/" req (handler req))
