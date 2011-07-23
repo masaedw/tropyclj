@@ -3,6 +3,9 @@
   (:use compojure.core)
   (:use compojure.handler)
   (:use compojure.route)
+  (:use hiccup.core)
+  (:use hiccup.form-helpers)
+  (:use hiccup.page-helpers)
   (:use ring.adapter.jetty)
   (:use ring.middleware.reload)
   (:use ring.middleware.stacktrace)
@@ -11,10 +14,19 @@
   (:use tropyclj.mongo-init)
 )
 
+(defmacro page [title & body-content]
+  `(html5
+    [:head
+     [:title ~title]
+     (include-js "http://code.jquery.com/jquery-1.6.min.js")
+     ]
+    [:body
+     ~@body-content]))
+
 (defn handler [req]
-  {:status 200
-   :headers {"Content-Type" "text/plain"}
-   :body "Hello from Clojure!\n"})
+  (page "tropyclj"
+        [:h1 "tropy"]
+        [:p "hello from clojure"]))
 
 (defroutes tropyclj
   (GET "/" req (handler req))
