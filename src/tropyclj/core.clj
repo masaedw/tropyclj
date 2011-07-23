@@ -9,6 +9,7 @@
   (:use ring.adapter.jetty)
   (:use ring.middleware.reload)
   (:use ring.middleware.stacktrace)
+  (:use ring.util.response)
   (:use somnium.congomongo)
   (:use tropyclj.middleware)
   (:use tropyclj.mongo-init)
@@ -23,13 +24,44 @@
     [:body
      ~@body-content]))
 
-(defn handler [req]
-  (page "tropyclj"
+(defn show-page [req]
+  (page "tropyclj - show"
         [:h1 "tropy"]
-        [:p "hello from clojure"]))
+        [:p "hello from clojure"]
+        [:a {:href "/edit"} "edit"]
+        " "
+        [:a {:href "/new"} "new"]))
+
+(defn edit-page [req]
+  (page "tropyclj - edit"
+        (form-to [:post "/write"]
+                 (text-field :title "title")
+                 [:br]
+                 (text-area :body "aaaa")
+                 [:br]
+                 (submit-button "trop!"))))
+
+(defn write-page [req]
+  (redirect "/"))
+
+(defn new-page [req]
+  (page "tropyclj - new"
+        (form-to [:post "/create"]
+                 (text-field :title "new title")
+                 [:br]
+                 (text-area :body "new body")
+                 [:br]
+                 (submit-button "trop!"))))
+
+(defn create-page [req]
+  (redirect "/"))
 
 (defroutes tropyclj
-  (GET "/" req (handler req))
+  (GET "/" _ show-page)
+  (GET "/new" _ new-page)
+  (POST "/create" _ create-page)
+  (GET "/edit" _ edit-page)
+  (POST "/write" _ write-page)
   (not-found "not found"))
 
 (wrap! tropyclj (:charset "utf8"))
