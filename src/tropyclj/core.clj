@@ -16,25 +16,22 @@
 )
 
 (defn count-trop []
-  0)
+  (fetch-count :tropy))
 
 (defn get-trop [id]
-  {:id id
-   :title "saved trop"
-   :content "sample content"})
+  (fetch-by-id :tropy (object-id id)))
 
 (defn get-random-trop []
-  {:id "random-id"
-   :title "random-title"
-   :content "raondom-content"})
+  (let [skip (rand-int (fetch-count :tropy))]
+    (first (fetch :tropy :skip skip :limit 1))))
 
 (defn update-trop [trop]
   )
 
 (defn create-trop [title content]
-  {:title title
-   :content content
-   :id "hgoehgoe"})
+  (insert! :tropy
+           {:title title
+            :content content}))
 
 (defmacro page [title & body-content]
   `(html5
@@ -97,7 +94,7 @@
 (defn create-page [{params :params}]
   (let [trop (create-trop (:title params)
                           (:content params))]
-    (redirect (str "/show/" (:id trop)))))
+    (redirect (str "/show/" (:_id trop)))))
 
 (defroutes tropyclj
   (GET "/" _ show-or-init-page)
