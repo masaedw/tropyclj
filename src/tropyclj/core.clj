@@ -25,8 +25,10 @@
   (let [skip (rand-int (fetch-count :tropy))]
     (first (fetch :tropy :skip skip :limit 1))))
 
-(defn update-trop [trop]
-  )
+(defn update-trop [id title content]
+  (let [trop (get-trop id)
+        new-trop (merge trop {:title title :content content})]
+    (update! :tropy trop new-trop)))
 
 (defn create-trop [title content]
   (insert! :tropy
@@ -47,7 +49,7 @@
         [:h1 "tropy"]
         [:p "Welcome to tropyclj!"]
         [:p "There are no pages yet. Why don't you create new page?"]
-        [:a {:href "/new"} "Create new page"]))
+        [:a {:href "/items/new"} "Create new page"]))
 
 (defn show-page [req]
   (let [trop (if-let [id (get-in req [:params :id])]
@@ -58,30 +60,35 @@
           [:p (h (:content trop))]
           [:a {:href "/"} "other page"]
           " "
-          [:a {:href "/edit"} "edit"]
+          [:a {:href (str "/items/" (:_id trop) "/edit")} "edit"]
           " "
-          [:a {:href "/new"} "Create new page"])))
+          [:a {:href "/items/new"} "Create new page"])))
 
 (defn show-or-init-page [req]
   (if (= 0 (count-trop))
     (init-page req)
     (show-page req)))
 
-(defn edit-page [req]
-  (page "tropyclj - edit"
-        (form-to [:post "/write"]
-                 (text-field :title "title")
-                 [:br]
-                 (text-area :body "aaaa")
-                 [:br]
-                 (submit-button "trop!"))))
+(defn edit-page [{{id :id} :params}]
+  (let [trop (get-trop id)]
+    (page "tropyclj - edit"
+          (form-to [:post (str "/items/" id)]
+                   (label :title "title")
+                   (text-field :title (:title trop))
+                   [:br]
+                   (label :content "content")
+                   [:br]
+                   (text-area :content (:content trop))
+                   [:br]
+                   (submit-button "trop!")))))
 
-(defn write-page [req]
-  (redirect "/"))
+(defn update-page [{{id :id title :title content :content} :params}]
+  (let [trop (update-trop id title content)]
+    (redirect (str "/items/" id))))
 
 (defn new-page [req]
   (page "tropyclj - new"
-        (form-to [:post "/create"]
+        (form-to [:post "/items/create"]
                  (label :title "title")
                  (text-field :title)
                  [:br]
@@ -94,15 +101,15 @@
 (defn create-page [{params :params}]
   (let [trop (create-trop (:title params)
                           (:content params))]
-    (redirect (str "/show/" (:_id trop)))))
+    (redirect (str "/items/" (:_id trop)))))
 
 (defroutes tropyclj
-  (GET "/" _ show-or-init-page)
-  (GET "/show/:id" _ show-page)
-  (GET "/new" _ new-page)
-  (POST "/create" _ create-page)
-  (GET "/edit" _ edit-page)
-  (POST "/write" _ write-page)
+  (GET  "/" _ show-or-init-page)
+  (GET  "/items/new" _ new-page)
+  (POST "/items/create" _ create-page)
+  (GET  "/items/:id" _ show-page)
+  (GET  "/items/:id/edit" _ edit-page)
+  (POST "/items/:id" _ update-page)
   (not-found "not found"))
 
 (wrap! tropyclj (:charset "utf8"))
