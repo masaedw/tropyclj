@@ -54,8 +54,8 @@
                (get-trop id)
                (get-random-trop))]
     (page "tropyclj - show"
-          [:h1 (:titlte trop)]
-          [:p (:content trop)]
+          [:h1 (h (:title trop))]
+          [:p (h (:content trop))]
           [:a {:href "/"} "other page"]
           " "
           [:a {:href "/edit"} "edit"]
